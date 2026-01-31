@@ -16,6 +16,7 @@
       color: white;
       text-align: center;
       flex-direction: column;
+      position: relative;
     }
 
     h1 {
@@ -45,17 +46,58 @@
       background-color: #e0e0e0;
       transform: translateY(-3px);
     }
+
+    /* 通知メッセージ用スタイル */
+    #thankYouMessage {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgba(0,0,0,0.85);
+      color: #fff;
+      padding: 15px 25px;
+      border-radius: 10px;
+      font-size: 18px;
+      opacity: 0;
+      transition: opacity 0.5s, bottom 0.5s;
+      pointer-events: none;
+    }
+
+    #thankYouMessage.show {
+      opacity: 1;
+      bottom: 50px;
+    }
   </style>
 </head>
 <body>
   <h1>サーバー投票ページ</h1>
   <p>下のボタンをクリックして、MinePortal.jpでサーバーに投票してください！</p>
-  <a class="button" href="https://mineportal.jp/servers/cmjp2e13c0000frjze9wi5m7l" target="_blank" onclick="showThanks()">投票ページへ移動</a>
+  <a class="button" href="https://mineportal.jp/servers/cmjp2e13c0000frjze9wi5m7l" target="_blank" id="voteButton">投票ページへ移動</a>
+
+  <div id="thankYouMessage">投票ありがとうございました！🎉</div>
 
   <script>
-    function showThanks() {
-      alert("投票ありがとうございました！🎉");
-    }
+    const button = document.getElementById('voteButton');
+    const message = document.getElementById('thankYouMessage');
+
+    // ボタンを押したときに localStorage にフラグを保存
+    button.addEventListener('click', () => {
+      localStorage.setItem('voted', 'true');
+    });
+
+    // ページが表示されたときにフラグを確認して通知表示
+    window.addEventListener('load', () => {
+      if (localStorage.getItem('voted') === 'true') {
+        message.classList.add('show');
+
+        // 5秒後にフェードアウト
+        setTimeout(() => {
+          message.classList.remove('show');
+          // 表示後フラグをリセット
+          localStorage.removeItem('voted');
+        }, 5000);
+      }
+    });
   </script>
 </body>
 </html>
