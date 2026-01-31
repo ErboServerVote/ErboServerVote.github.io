@@ -1,4 +1,3 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -29,7 +28,7 @@
       margin-bottom: 20px;
     }
 
-    a.button {
+    .button {
       background-color: #ffffff;
       color: #6e8efb;
       padding: 15px 40px;
@@ -40,20 +39,21 @@
       transition: all 0.3s ease;
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
       cursor: pointer;
-      margin-bottom: 20px;
+      margin: 10px 0;
+      display: inline-block;
     }
 
-    a.button:hover {
+    .button:hover {
       background-color: #e0e0e0;
       transform: translateY(-3px);
     }
 
     #timer {
       font-size: 18px;
+      margin-top: 20px;
       margin-bottom: 40px;
     }
 
-    /* 通知メッセージ用スタイル */
     #thankYouMessage {
       position: fixed;
       bottom: 30px;
@@ -77,44 +77,60 @@
 </head>
 <body>
   <h1>サーバー投票ページ</h1>
-  <p>下のボタンをクリックして、MinePortal.jpでサーバーに投票してください！</p>
-  <a class="button" href="https://mineportal.jp/servers/cmjp2e13c0000frjze9wi5m7l" target="_blank" id="voteButton">投票ページへ移動</a>
+  <p>下のボタンをクリックして、1日1回投票してください！</p>
+
+  <a class="button" href="https://mineportal.jp/servers/cmjp2e13c0000frjze9wi5m7l" target="_blank" id="minePortalBtn">MinePortal.jp 投票</a>
+
+  <a class="button" href="https://votesite.erbo.f5.si/" target="_blank" id="originalVoteBtn">公式投票サイト</a>
+
   <div id="timer">次回投票まで: --:--:--</div>
   <div id="thankYouMessage">投票ありがとうございました！</div>
 
   <script>
-    const button = document.getElementById('voteButton');
+    const mineBtn = document.getElementById('minePortalBtn');
+    const originalBtn = document.getElementById('originalVoteBtn');
     const message = document.getElementById('thankYouMessage');
     const timer = document.getElementById('timer');
 
-    // 日付で投票管理
     function getTodayString() {
       const now = new Date();
       return now.getFullYear() + '-' + (now.getMonth()+1) + '-' + now.getDate();
     }
 
-    // ボタンクリック時に投票済みを記録
-    button.addEventListener('click', () => {
-      localStorage.setItem('voted', getTodayString());
+    mineBtn.addEventListener('click', () => {
+      localStorage.setItem('voted_mine', getTodayString());
     });
 
-    // ページ読み込み時に投票済みチェック
+    originalBtn.addEventListener('click', () => {
+      localStorage.setItem('voted_original', getTodayString());
+    });
+
     function checkVoteStatus() {
-      const votedDate = localStorage.getItem('voted');
       const today = getTodayString();
-      if (votedDate === today) {
-        // 投票済み
-        button.style.pointerEvents = 'none';
-        button.style.opacity = '0.6';
-        showThanks();
+
+      const votedMine = localStorage.getItem('voted_mine');
+      if(votedMine === today){
+        mineBtn.style.pointerEvents = 'none';
+        mineBtn.style.opacity = '0.6';
       } else {
-        // 投票可能
-        button.style.pointerEvents = 'auto';
-        button.style.opacity = '1';
+        mineBtn.style.pointerEvents = 'auto';
+        mineBtn.style.opacity = '1';
+      }
+
+      const votedOriginal = localStorage.getItem('voted_original');
+      if(votedOriginal === today){
+        originalBtn.style.pointerEvents = 'none';
+        originalBtn.style.opacity = '0.6';
+      } else {
+        originalBtn.style.pointerEvents = 'auto';
+        originalBtn.style.opacity = '1';
+      }
+
+      if(votedMine === today || votedOriginal === today){
+        showThanks();
       }
     }
 
-    // 「投票ありがとうございました！」表示
     function showThanks() {
       message.classList.add('show');
       setTimeout(() => {
@@ -122,24 +138,22 @@
       }, 5000);
     }
 
-    // タイマー表示
     function updateTimer() {
       const now = new Date();
       const tomorrow = new Date();
-      tomorrow.setHours(24,0,0,0); // 翌日の00:00
-      const diff = tomorrow - now; // ミリ秒差
+      tomorrow.setHours(24,0,0,0);
+      const diff = tomorrow - now;
       const hours = Math.floor(diff / 1000 / 60 / 60);
       const minutes = Math.floor((diff / 1000 / 60) % 60);
       const seconds = Math.floor((diff / 1000) % 60);
       timer.textContent = `次回投票まで: ${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
     }
 
-    // ページロード時
     window.addEventListener('load', () => {
       checkVoteStatus();
       updateTimer();
       setInterval(() => {
-        checkVoteStatus(); // 毎秒チェックして日付変わったらボタン有効化
+        checkVoteStatus();
         updateTimer();
       }, 1000);
     });
