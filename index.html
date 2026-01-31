@@ -38,6 +38,7 @@
       font-weight: bold;
       transition: all 0.3s ease;
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      cursor: pointer;
     }
 
     a.button:hover {
@@ -49,6 +50,12 @@
 <body>
   <h1>サーバー投票ページ</h1>
   <p>下のボタンをクリックして、MinePortal.jpでサーバーに投票してください！</p>
-  <a class="button" href="https://mineportal.jp/servers/cmjp2e13c0000frjze9wi5m7l" target="_blank">投票ページへ移動</a>
+  <a class="button" href="https://mineportal.jp/servers/cmjp2e13c0000frjze9wi5m7l" target="_blank" onclick="showThanks()">投票ページへ移動</a>
+
+  <script>
+    function showThanks() {
+      alert("投票ありがとうございました！🎉");
+    }
+  </script>
 </body>
 </html>
