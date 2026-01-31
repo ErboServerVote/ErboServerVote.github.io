@@ -26,7 +26,7 @@
 
     p {
       font-size: 18px;
-      margin-bottom: 40px;
+      margin-bottom: 20px;
     }
 
     a.button {
@@ -40,11 +40,17 @@
       transition: all 0.3s ease;
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
       cursor: pointer;
+      margin-bottom: 20px;
     }
 
     a.button:hover {
       background-color: #e0e0e0;
       transform: translateY(-3px);
+    }
+
+    #timer {
+      font-size: 18px;
+      margin-bottom: 40px;
     }
 
     /* 通知メッセージ用スタイル */
@@ -73,30 +79,69 @@
   <h1>サーバー投票ページ</h1>
   <p>下のボタンをクリックして、MinePortal.jpでサーバーに投票してください！</p>
   <a class="button" href="https://mineportal.jp/servers/cmjp2e13c0000frjze9wi5m7l" target="_blank" id="voteButton">投票ページへ移動</a>
-
-  <div id="thankYouMessage">投票ありがとうございました！🎉</div>
+  <div id="timer">次回投票まで: --:--:--</div>
+  <div id="thankYouMessage">投票ありがとうございました！</div>
 
   <script>
     const button = document.getElementById('voteButton');
     const message = document.getElementById('thankYouMessage');
+    const timer = document.getElementById('timer');
 
-    // ボタンを押したときに localStorage にフラグを保存
+    // 日付で投票管理
+    function getTodayString() {
+      const now = new Date();
+      return now.getFullYear() + '-' + (now.getMonth()+1) + '-' + now.getDate();
+    }
+
+    // ボタンクリック時に投票済みを記録
     button.addEventListener('click', () => {
-      localStorage.setItem('voted', 'true');
+      localStorage.setItem('voted', getTodayString());
     });
 
-    // ページが表示されたときにフラグを確認して通知表示
-    window.addEventListener('load', () => {
-      if (localStorage.getItem('voted') === 'true') {
-        message.classList.add('show');
-
-        // 5秒後にフェードアウト
-        setTimeout(() => {
-          message.classList.remove('show');
-          // 表示後フラグをリセット
-          localStorage.removeItem('voted');
-        }, 5000);
+    // ページ読み込み時に投票済みチェック
+    function checkVoteStatus() {
+      const votedDate = localStorage.getItem('voted');
+      const today = getTodayString();
+      if (votedDate === today) {
+        // 投票済み
+        button.style.pointerEvents = 'none';
+        button.style.opacity = '0.6';
+        showThanks();
+      } else {
+        // 投票可能
+        button.style.pointerEvents = 'auto';
+        button.style.opacity = '1';
       }
+    }
+
+    // 「投票ありがとうございました！」表示
+    function showThanks() {
+      message.classList.add('show');
+      setTimeout(() => {
+        message.classList.remove('show');
+      }, 5000);
+    }
+
+    // タイマー表示
+    function updateTimer() {
+      const now = new Date();
+      const tomorrow = new Date();
+      tomorrow.setHours(24,0,0,0); // 翌日の00:00
+      const diff = tomorrow - now; // ミリ秒差
+      const hours = Math.floor(diff / 1000 / 60 / 60);
+      const minutes = Math.floor((diff / 1000 / 60) % 60);
+      const seconds = Math.floor((diff / 1000) % 60);
+      timer.textContent = `次回投票まで: ${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
+    }
+
+    // ページロード時
+    window.addEventListener('load', () => {
+      checkVoteStatus();
+      updateTimer();
+      setInterval(() => {
+        checkVoteStatus(); // 毎秒チェックして日付変わったらボタン有効化
+        updateTimer();
+      }, 1000);
     });
   </script>
 </body>
